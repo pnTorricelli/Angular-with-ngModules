@@ -1,10 +1,10 @@
-import { signal, Injectable } from '@angular/core';
-import type { TaskInterface } from './task/task.model';
-import type { NewTaskInterface } from './new-task/new-task.model';
+import { Injectable } from '@angular/core';
+
+import { type NewTaskData } from './task/task.model';
 
 @Injectable({ providedIn: 'root' })
 export class TasksService {
-  private tasks = signal<TaskInterface[]>([
+  private tasks = [
     {
       id: 't1',
       userId: 'u1',
@@ -28,42 +28,37 @@ export class TasksService {
         'Prepare and describe an issue template which will help with project management',
       dueDate: '2024-06-15',
     },
-  ]);
+  ];
 
   constructor() {
-    const tasks = localStorage.getItem("tasks");
+    const tasks = localStorage.getItem('tasks');
+
     if (tasks) {
-      this.tasks.set(JSON.parse(tasks));
+      this.tasks = JSON.parse(tasks);
     }
   }
 
-
-  getUserTasks(userId: string | undefined): TaskInterface[] {
-    return this.tasks().filter(task => task.userId === userId);
+  getUserTasks(userId: string) {
+    return this.tasks.filter((task) => task.userId === userId);
   }
 
-  addTask(userId: string, newTask: NewTaskInterface): void {
-    const id = 't' + (this.tasks().length + 1).toString();
-
-    this.tasks.update(tasks => [
-      {
-        id,
-        userId,
-        title: newTask.title,
-        summary: newTask.summary,
-        dueDate: newTask.date,
-      },
-      ...tasks,
-    ]);
-    this.updateLocalStorageTasks();
+  addTask(taskData: NewTaskData, userId: string) {
+    this.tasks.unshift({
+      id: new Date().getTime().toString(),
+      userId: userId,
+      title: taskData.title,
+      summary: taskData.summary,
+      dueDate: taskData.date,
+    });
+    this.saveTasks();
   }
 
-  removeTask(id: string): void {
-    this.tasks.update(tasks => tasks.filter(task => task.id !== id));
-    this.updateLocalStorageTasks();
+  removeTask(id: string) {
+    this.tasks = this.tasks.filter((task) => task.id !== id);
+    this.saveTasks();
   }
 
-  private updateLocalStorageTasks(): void {
-    localStorage.setItem("tasks", JSON.stringify(this.tasks()));
+  private saveTasks() {
+    localStorage.setItem('tasks', JSON.stringify(this.tasks));
   }
 }
