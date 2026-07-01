@@ -1,0 +1,166 @@
+<!--
+  ============================================================
+  1. TEMPLATE CON STATO INTERNO CLASSICO
+  ============================================================
+
+  Questa versione si usa quando nel file TypeScript hai una proprietà
+  normale chiamata selectedUser.
+
+  Esempio TypeScript collegato:
+
+    selectedUser = DUMMY_USERS[randomActiveUser];
+
+    get imagePath(): string {
+      return 'users/' + this.selectedUser.avatar;
+    }
+
+    onSelectUser(): void {
+      const randomActiveUser = Math.floor(Math.random() * DUMMY_USERS.length);
+      this.selectedUser = DUMMY_USERS[randomActiveUser];
+    }
+
+  In questo caso:
+
+    selectedUser.name  → proprietà normale
+    imagePath          → getter classico
+    onSelectUser()     → metodo classico
+
+  Nota:
+  alt="{{ selectedUser.name }}" funziona, ma in Angular è preferibile
+  usare property binding:
+
+    [alt]="selectedUser.name"
+-->
+
+<!--
+<div>
+  <button (click)="onSelectUser()">
+    <img [src]="imagePath" [alt]="selectedUser.name" />
+    <span>{{ selectedUser.name }}</span>
+  </button>
+</div>
+-->
+
+
+<!--
+  ============================================================
+  2. TEMPLATE CON STATO INTERNO MODERNO - SIGNAL
+  ============================================================
+
+  Questa versione si usa quando nel file TypeScript hai selectedUser
+  definito come signal.
+
+  Esempio TypeScript collegato:
+
+    selectedUser = signal(DUMMY_USERS[randomActiveUser]);
+
+    imagePath = computed((): string => {
+      return 'users/' + this.selectedUser().avatar;
+    });
+
+    onSelectUser(): void {
+      const randomActiveUser = Math.floor(Math.random() * DUMMY_USERS.length);
+      this.selectedUser.set(DUMMY_USERS[randomActiveUser]);
+    }
+
+  In questo caso:
+
+    selectedUser()        → lettura del signal
+    selectedUser().name   → accesso alla proprietà name dell'oggetto nel signal
+    imagePath()           → lettura della computed
+    onSelectUser()        → metodo che aggiorna il signal
+
+  Regola importante:
+  i signal e le computed nel template si leggono con le parentesi tonde.
+-->
+
+<!--
+<div>
+  <button (click)="onSelectUser()">
+    <img [src]="imagePath()" [alt]="selectedUser().name" />
+    <span>{{ selectedUser().name }}</span>
+  </button>
+</div>
+-->
+
+
+<!--
+  ============================================================
+  3. TEMPLATE CON INPUT MODERNI - input()
+  ============================================================
+
+  Questa versione si usa quando nel file TypeScript ricevi dati dal padre
+  usando input() o input.required().
+
+  Esempio TypeScript collegato:
+
+    avatar = input<string>('');
+    name = input.required<string>();
+
+    imagePath = computed((): string => {
+      return 'users/' + this.avatar();
+    });
+
+  In questo caso:
+
+    name()       → lettura dell'input signal
+    avatar()     → lettura dell'input signal
+    imagePath()  → lettura della computed
+
+  Nota importante:
+  input() produce un input signal readonly.
+  Questo significa che il componente figlio può leggere il valore,
+  ma non dovrebbe modificarlo direttamente.
+
+  Quindi qui NON avrebbe molto senso chiamare onSelectUser()
+  se questo componente riceve semplicemente avatar e name dal padre.
+
+  Se l'utente selezionato deve cambiare, normalmente lo cambia il padre.
+-->
+
+<!--
+<div>
+  <button>
+    <img [src]="imagePath()" [alt]="name()" />
+    <span>{{ name() }}</span>
+  </button>
+</div>
+-->
+
+
+<!--
+  ============================================================
+  4. TEMPLATE ATTIVO - INPUT CLASSICI CON @Input()
+  ============================================================
+
+  Questa è la versione attualmente valida con il TypeScript non commentato.
+
+  Esempio TypeScript collegato:
+
+    @Input({ required: true }) avatar!: string;
+    @Input({ required: true }) name!: string;
+
+    get imagePath(): string {
+      return 'users/' + this.avatar;
+    }
+
+  In questo caso:
+
+    avatar     → proprietà normale ricevuta dal padre
+    name       → proprietà normale ricevuta dal padre
+    imagePath  → getter classico
+
+  Qui NON devi usare le parentesi tonde:
+
+    name       corretto
+    name()     sbagliato
+
+  perché name non è un signal, è una normale proprietà della classe.
+-->
+
+<app-card>
+  <button [class.active]="selected()" (click)="onSelectUser()">
+    <img [src]="imagePath" [alt]="user.name" />
+    <span>{{ user.name }}</span>
+  </button>
+</app-card>

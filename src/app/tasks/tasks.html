@@ -1,0 +1,23 @@
+<section id="tasks">
+
+  @if(isAddingTask()){
+  <app-new-task [userId]="id()" (close)="onClose()"></app-new-task>
+  }
+  <header>
+    <p>{{ nameUser() }}'s Tasks</p>
+    <menu>
+      <button (click)="onStartAddTask()"> Add Task</button>
+    </menu>
+  </header>
+
+
+
+  <ul>
+    @for ( task of tasksUser(); track task.id){
+    <li>
+      <app-task [task]="task"></app-task>
+    </li>
+    }
+
+  </ul>
+</section>
